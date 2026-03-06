@@ -22,25 +22,31 @@ type Config struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
-	chatID, err := strconv.ParseInt(os.Getenv("TELEGRAM_CHAT_ID"), 10, 64)
+	// 텔레그램 채팅 ID 확인
+	chatIDStr := os.Getenv("TELEGRAM_CHAT_ID")
+	if chatIDStr == "" {
+		return nil, fmt.Errorf("TELEGRAM_CHAT_ID is required")
+	}
+	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid chat id: %v", err)
 	}
 
-	maxArticles := 20
+	// 최대 뉴스 기사 수 설정
+	maxArticles := 10 // 기본값 하향 조정 (에러 방지)
 	if max := os.Getenv("MAX_NEWS_ARTICLES"); max != "" {
 		if parsed, err := strconv.Atoi(max); err == nil {
 			maxArticles = parsed
 		}
 	}
 
-	// [수정됨] 환경 변수가 있으면 그걸 쓰고, 없으면 기본값(매일 9시) 사용
+	// 크론 스케줄 (기본값: 매일 오전 9시)
 	cronSchedule := os.Getenv("CRON_SCHEDULE")
 	if cronSchedule == "" {
 		cronSchedule = "0 9 * * *" 
 	}
 
-	// [수정됨] 환경 변수가 있으면 그걸 쓰고, 없으면 1.5-flash를 기본으로 사용
+	// 제미나이 모델 설정 (404 에러 방지를 위해 가장 표준적인 이름 사용)
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
 		geminiModel = "gemini-1.5-flash"
