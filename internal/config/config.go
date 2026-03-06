@@ -33,7 +33,7 @@ func Load() (*Config, error) {
 	}
 
 	// 최대 뉴스 기사 수 설정
-	maxArticles := 10 // 기본값 하향 조정 (에러 방지)
+	maxArticles := 10
 	if max := os.Getenv("MAX_NEWS_ARTICLES"); max != "" {
 		if parsed, err := strconv.Atoi(max); err == nil {
 			maxArticles = parsed
@@ -46,10 +46,10 @@ func Load() (*Config, error) {
 		cronSchedule = "0 9 * * *" 
 	}
 
-	// 제미나이 모델 설정 (404 에러 방지를 위해 가장 표준적인 이름 사용)
+	// [수정 핵심] 404 에러 방지를 위해 models/ 접두사를 강제로 붙임
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
-		geminiModel = "gemini-1.5-flash"
+		geminiModel = "models/gemini-1.5-flash"
 	}
 
 	cfg := &Config{
