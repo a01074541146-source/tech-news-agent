@@ -19,14 +19,12 @@ type Config struct {
 	NewsCategories   []string
 }
 
-// Load holds all application configuration
 func Load() (*Config, error) {
-
 	_ = godotenv.Load()
 
 	chatID, err := strconv.ParseInt(os.Getenv("TELEGRAM_CHAT_ID"), 10, 64)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid chat id: %v", err)
 	}
 
 	maxArticles := 20
@@ -36,15 +34,16 @@ func Load() (*Config, error) {
 		}
 	}
 
+	// [수정됨] 환경 변수가 있으면 그걸 쓰고, 없으면 기본값(매일 9시) 사용
 	cronSchedule := os.Getenv("CRON_SCHEDULE")
-	if cronSchedule != "" {
-		//Default: Every Monday at 9 AM
-		cronSchedule = "0 9 * * 1"
+	if cronSchedule == "" {
+		cronSchedule = "0 9 * * *" 
 	}
 
+	// [수정됨] 환경 변수가 있으면 그걸 쓰고, 없으면 1.5-flash를 기본으로 사용
 	geminiModel := os.Getenv("GEMINI_MODEL")
-	if geminiModel != "" {
-		geminiModel = "gemini-2.5-flash"
+	if geminiModel == "" {
+		geminiModel = "gemini-1.5-flash"
 	}
 
 	cfg := &Config{
@@ -65,19 +64,10 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-// Validate checks if all required configurations is present
 func (c *Config) Validate() error {
-	if c.GeminiAPIKey == "" {
-		return fmt.Errorf("GEMINI_API_KEY is required")
-	}
-	if c.TelegramBotToken == "" {
-		return fmt.Errorf("TELEGRAM_BOT_TOKEN is required")
-	}
-	if c.TelegramChatID == 0 {
-		return fmt.Errorf("TELEGRAM_CHAT_ID is required")
-	}
-	if c.NewsAPIKey == "" {
-		return fmt.Errorf("NEWS_API_KEY is required")
-	}
+	if c.GeminiAPIKey == "" { return fmt.Errorf("GEMINI_API_KEY is required") }
+	if c.TelegramBotToken == "" { return fmt.Errorf("TELEGRAM_BOT_TOKEN is required") }
+	if c.TelegramChatID == 0 { return fmt.Errorf("TELEGRAM_CHAT_ID is required") }
+	if c.NewsAPIKey == "" { return fmt.Errorf("NEWS_API_KEY is required") }
 	return nil
 }
