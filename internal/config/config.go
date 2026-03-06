@@ -32,25 +32,23 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid chat id: %v", err)
 	}
 
-	// 최대 뉴스 기사 수 설정
-	maxArticles := 10
+	// 최대 뉴스 기사 수 설정 (에러 방지를 위해 5개로 하향 조정)
+	maxArticles := 5
 	if max := os.Getenv("MAX_NEWS_ARTICLES"); max != "" {
 		if parsed, err := strconv.Atoi(max); err == nil {
 			maxArticles = parsed
 		}
 	}
 
-	// 크론 스케줄 (기본값: 매일 오전 9시)
+	// 크론 스케줄
 	cronSchedule := os.Getenv("CRON_SCHEDULE")
 	if cronSchedule == "" {
 		cronSchedule = "0 9 * * *" 
 	}
 
-	// [수정 핵심] 404 에러 방지를 위해 models/ 접두사를 강제로 붙임
-	geminiModel := os.Getenv("GEMINI_MODEL")
-	if geminiModel == "" {
-		geminiModel = "models/gemini-1.5-flash"
-	}
+	// [수정 핵심] 환경 변수 무시하고 가장 안정적인 1.5-flash 이름을 강제로 박음
+	// 404 에러 방지를 위해 "models/"를 뺀 표준 명칭 사용
+	geminiModel := "gemini-1.5-flash"
 
 	cfg := &Config{
 		GeminiAPIKey:     os.Getenv("GEMINI_API_KEY"),
